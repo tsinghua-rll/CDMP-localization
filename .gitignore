@@ -1,5 +1,7 @@
 assets/
-data/
+data/background/
+data/clipped_obj/
+data/scene/
 
 # Created by https://www.gitignore.io/api/vim
 
