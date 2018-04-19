@@ -4,7 +4,7 @@
 # File Name : cdmp_image.py
 # Purpose :
 # Creation Date : 19-04-2018
-# Last Modified : 2018年04月19日 星期四 21时43分20秒
+# Last Modified : 2018年04月19日 星期四 21时40分09秒
 # Created By : Jeasine Ma [jeasinema[at]gmail[dot]com]
 
 import torch 
