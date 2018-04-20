@@ -4,7 +4,7 @@
 # File Name : cdmp_image.py
 # Purpose :
 # Creation Date : 19-04-2018
-# Last Modified : 2018年04月19日 星期四 21时43分20秒
+# Last Modified : 2018年04月20日 星期五 16时57分15秒
 # Created By : Jeasine Ma [jeasinema[at]gmail[dot]com]
 
 import torch 
@@ -48,7 +48,7 @@ class CDMP_Image(data.Dataset):
 
 
 class CDMP_Image_Localization(data.Dataset):
-    def __init__(self, data_path, dataset_size, image_size=224, obj_size=224, obj_sum=10, 
+    def __init__(self, data_path, dataset_size, image_size=224, obj_size=48, obj_sum=10, 
             collision_radius=50, border=25):
         self.data = CDMP_Synthesis(data_path, obj_sum, collision_radius, border, image_size, obj_size) 
         self.dataset_size = dataset_size 

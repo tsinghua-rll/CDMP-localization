@@ -14,17 +14,16 @@ from bridson import poisson_disc_samples
 
 
 class CDMP_Synthesis(object):
-    def __init__(self, data_path, obj_sum=10, collision_radius=50, border=25, image_size=224, object_size=224):
+    def __init__(self, data_path, obj_sum=10, collision_radius=50, border=25, image_size=224, object_size=48):
         self.data_path = data_path
         self.obj_sum = obj_sum
         self.collision_radius = collision_radius
         self.border = border
         self.cls_dict, self.label = self.get_all_labels()
-        self.bg_h = 2400
-        self.bg_w = 2700
+        self.bg_h = 240
+        self.bg_w = 270
         self.image_size = image_size 
         self.object_size = object_size
-        self.factor = (self.bg_w+self.bg_h)/2/image_size
 
     def get_all_labels(self):
         obj_cls = [i.split(
@@ -59,7 +58,7 @@ class CDMP_Synthesis(object):
         obj_img = []
         for name in f:
             im = cv2.imread(name, cv2.IMREAD_UNCHANGED)
-            im = cv2.resize(im, (int(im.shape[1]/self.factor), int(im.shape[0]/self.factor)))
+            im = cv2.resize(im, (int(im.shape[1]), int(im.shape[0])))
             obj_img.append(im)
 
         redo = True

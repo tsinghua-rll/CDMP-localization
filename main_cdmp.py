@@ -41,7 +41,7 @@ device_id = [0,1,2]
 
 # dataset hyper params
 min_dim = 224
-object_size = 224
+object_size = 48
 means = (104, 117, 123)
 
 train_loader = torch.utils.data.DataLoader(
@@ -51,25 +51,25 @@ train_loader = torch.utils.data.DataLoader(
                 obj_size=object_size,
     ),
     batch_size=args.batch_size,
-    num_workers=32,
+    num_workers=1,
     pin_memory=True,
     shuffle=True,
     collate_fn=collect_fn_image_localization
 )
 
 
-test_loader = torch.utils.data.DataLoader(
-    CDMP_Image_Localization(data_path='/home1/mxj/workspace/CDMP-localization/data',
-                dataset_size=1000,
-                image_size=min_dim,
-                obj_size=object_size,
-    ),
-    batch_size=args.batch_size,
-    num_workers=32,
-    pin_memory=True,
-    shuffle=True,
-    collate_fn=collect_fn_image_localization
-)
+# test_loader = torch.utils.data.DataLoader(
+#     CDMP_Image_Localization(data_path='/home1/mxj/workspace/CDMP-localization/data',
+#                 dataset_size=1000,
+#                 image_size=min_dim,
+#                 obj_size=object_size,
+#     ),
+#     batch_size=args.batch_size,
+#     num_workers=32,
+#     pin_memory=True,
+#     shuffle=True,
+#     collate_fn=collect_fn_image_localization
+# )
 
 
 def train(model, loader, epoch, optimizer):
@@ -110,42 +110,42 @@ def train(model, loader, epoch, optimizer):
             logger.add_image('train_obj_img', obj_img, batch_idx + epoch * len(loader))
 
 
-def test(model, loader, epoch):
-    model.eval()
-    test_loss = 0
-    for batch_idx, (img, object_img, target) in enumerate(loader):
-        # img: (N, C, H, W)
-        # object_img: (N, C, H, W)
-        # target: (N, 3) [x, y, id]
-        if args.cuda:
-            img, object_img, target = img.cuda(), object_img.cuda(), target.cuda()
-        img, object_img, target = Variable(img), Variable(object_img), Variable(target)
-        output = model(img, object_img)
-        loss = F.mse_loss(output, target[:, :2]).mean() # because you've already using log_softmax as output
-        test_loss += loss.data.cpu()
-        if batch_idx % args.log_interval == 0:
-            # visualize gt 
-            y, x = np.clip((output[0]*min_dim).data.cpu().numpy().astype(np.int32), a_min=0, a_max=min_dim-1)
-            gt_y, gt_x, label_id = (target[0]*min_dim).data.cpu().numpy().astype(np.int32)
-            label_id = int(target[0, -1])
-            log_img = (img[0].permute(1,2,0).data.cpu().numpy()*255).astype(np.uint8)
-            log_img = cv2.circle(log_img, (x, y), 10, (255,0,0), 5)
-            cv2.putText(log_img, loader.dataset.label[label_id], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, 
-                    (255,0,0))
-            log_img = cv2.circle(log_img, (gt_x, gt_y), 10, (0,255,0), 5)
-            cv2.putText(log_img, loader.dataset.label[label_id], (gt_x, gt_y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, 
-                    (0,255,0))
-            obj_img = (object_img[0].permute(1,2,0).data.cpu().numpy()*255).astype(np.uint8)
-            log_img[..., :] = log_img[..., [2,1,0]]
-            obj_img[..., :] = obj_img[..., [2,1,0]]
-            logger.add_image('test_log_img', log_img, batch_idx + epoch * len(loader))
-            logger.add_image('test_obj_img', obj_img, batch_idx + epoch * len(loader))
-
-
-    test_loss /= len(loader.dataset) 
-    # visualize gt
-    # TBD
-    return test_loss
+# def test(model, loader, epoch):
+#     model.eval()
+#     test_loss = 0
+#     for batch_idx, (img, object_img, target) in enumerate(loader):
+#         # img: (N, C, H, W)
+#         # object_img: (N, C, H, W)
+#         # target: (N, 3) [x, y, id]
+#         if args.cuda:
+#             img, object_img, target = img.cuda(), object_img.cuda(), target.cuda()
+#         img, object_img, target = Variable(img), Variable(object_img), Variable(target)
+#         output = model(img, object_img)
+#         loss = F.mse_loss(output, target[:, :2]).mean() # because you've already using log_softmax as output
+#         test_loss += loss.data.cpu()
+#         if batch_idx % args.log_interval == 0:
+#             # visualize gt 
+#             y, x = np.clip((output[0]*min_dim).data.cpu().numpy().astype(np.int32), a_min=0, a_max=min_dim-1)
+#             gt_y, gt_x, label_id = (target[0]*min_dim).data.cpu().numpy().astype(np.int32)
+#             label_id = int(target[0, -1])
+#             log_img = (img[0].permute(1,2,0).data.cpu().numpy()*255).astype(np.uint8)
+#             log_img = cv2.circle(log_img, (x, y), 10, (255,0,0), 5)
+#             cv2.putText(log_img, loader.dataset.label[label_id], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, 
+#                     (255,0,0))
+#             log_img = cv2.circle(log_img, (gt_x, gt_y), 10, (0,255,0), 5)
+#             cv2.putText(log_img, loader.dataset.label[label_id], (gt_x, gt_y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, 
+#                     (0,255,0))
+#             obj_img = (object_img[0].permute(1,2,0).data.cpu().numpy()*255).astype(np.uint8)
+#             log_img[..., :] = log_img[..., [2,1,0]]
+#             obj_img[..., :] = obj_img[..., [2,1,0]]
+#             logger.add_image('test_log_img', log_img, batch_idx + epoch * len(loader))
+#             logger.add_image('test_obj_img', obj_img, batch_idx + epoch * len(loader))
+# 
+# 
+#     test_loss /= len(loader.dataset) 
+#     # visualize gt
+#     # TBD
+#     return test_loss
 
 
 def main():
@@ -157,18 +157,19 @@ def main():
         optimizer = optim.Adam(model.parameters(), lr=args.lr)
         for epoch in range(args.epoch):
             train(model, train_loader, epoch, optimizer)       
-            loss = test(model, test_loader, epoch)
-            logger.add_scalar('test_loss', loss, epoch)
+            # loss = test(model, test_loader, epoch)
+            # logger.add_scalar('test_loss', loss, epoch)
             if epoch % args.save_interval == 0:
                 torch.save(model, os.path.join(args.model_path, 
                     args.tag + '_{}.model'.format(epoch)))
     else:
-        model = torch.load(os.path.join(args.model_path, args.tag + '.model'))
-        if args.cuda:
-            model = nn.DataParallel(model, device_ids=device_id).cuda()
-            # model = model.cuda()
-        loss = test(model, test_loader, 0)
-        print('Test done, loss={}'.format(loss))
+        pass
+        # model = torch.load(os.path.join(args.model_path, args.tag + '.model'))
+        # if args.cuda:
+        #     model = nn.DataParallel(model, device_ids=device_id).cuda()
+        #     # model = model.cuda()
+        # loss = test(model, test_loader, 0)
+        # print('Test done, loss={}'.format(loss))
               
 if __name__ == "__main__":
     main()
